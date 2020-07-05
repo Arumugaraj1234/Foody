@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foody/models/dish_data.dart';
+import 'package:foody/models/dish_details_model.dart';
 import 'package:foody/models/network_response.dart';
+import 'package:foody/screens/order_summary_screen.dart';
 import 'package:foody/support_files/api_services.dart';
 import 'package:foody/widgets/dish_details_widget.dart';
 import 'package:provider/provider.dart';
@@ -52,17 +54,68 @@ class _HomeScreenState extends State<HomeScreen>
     return resultWidget;
   }
 
-  Widget setCartCount() {
+  Widget setCartButton() {
     return Consumer<DishData>(builder: (context, dishData, child) {
-      return Text(
-        Provider.of<DishData>(context, listen: false)
-            .selectedItemsCount
-            .toString(),
-        style: new TextStyle(
-          color: Colors.white,
-          fontSize: 8,
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Stack(
+            children: <Widget>[
+              IconButton(
+                icon: new Icon(
+                  Icons.shopping_cart,
+                  color: Colors.grey,
+                  size: 30.0,
+                ),
+                onPressed: () {
+                  print(Provider.of<DishData>(context, listen: false)
+                      .selectedDishes);
+                  List<DishDetailsModel> selectedDishes =
+                      Provider.of<DishData>(context, listen: false)
+                          .selectedDishes;
+                  int selectedItemCount =
+                      Provider.of<DishData>(context, listen: false)
+                          .selectedItemsCount;
+                  if (selectedItemCount > 0) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return OrderSummaryScreen(
+                          selectedDishes: selectedDishes,
+                          selectedItemsCount: selectedItemCount,
+                        );
+                      }),
+                    );
+                  }
+                },
+              ),
+              new Positioned(
+                right: 0,
+                child: new Container(
+                  padding: EdgeInsets.all(1),
+                  decoration: new BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  constraints: BoxConstraints(
+                    minWidth: 12,
+                    minHeight: 12,
+                  ),
+                  child: Text(
+                    Provider.of<DishData>(context, listen: false)
+                        .selectedItemsCount
+                        .toString(),
+                    style: new TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
-        textAlign: TextAlign.center,
       );
     });
   }
@@ -119,37 +172,7 @@ class _HomeScreenState extends State<HomeScreen>
           appBar: AppBar(
               backgroundColor: Colors.white,
               leading: IconButton(icon: Icon(Icons.menu), onPressed: null),
-              actions: <Widget>[
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Stack(
-                      children: <Widget>[
-                        new Icon(
-                          Icons.shopping_cart,
-                          color: Colors.grey,
-                          size: 30.0,
-                        ),
-                        new Positioned(
-                          right: 0,
-                          child: new Container(
-                            padding: EdgeInsets.all(1),
-                            decoration: new BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            constraints: BoxConstraints(
-                              minWidth: 12,
-                              minHeight: 12,
-                            ),
-                            child: setCartCount(),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              actions: <Widget>[setCartButton()],
               bottom: TabBar(
                 tabs: allTabs,
                 indicatorColor: Colors.red,

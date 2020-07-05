@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:collection';
 import 'package:foody/models/category_model.dart';
+import 'package:foody/models/dish_details_model.dart';
 
 class DishData extends ChangeNotifier {
   List<CategoryModel> _categories = [];
@@ -27,40 +28,25 @@ class DishData extends ChangeNotifier {
   void addItem({int categoryIndex, int dishIndex}) {
     _categories[categoryIndex].dishes[dishIndex].addedCount++;
     _totalSelectedItems++;
-    print(_totalSelectedItems);
     notifyListeners();
   }
 
   void removeItem({int categoryIndex, int dishIndex}) {
     _categories[categoryIndex].dishes[dishIndex].addedCount--;
     _totalSelectedItems--;
-    print(_totalSelectedItems);
+
     notifyListeners();
   }
 
-  /*
-  UnmodifiableListView<Task> get tasks {
-    return UnmodifiableListView(_tasks);
+  List<DishDetailsModel> get selectedDishes {
+    List<DishDetailsModel> selectedDishes = [];
+    for (var category in _categories) {
+      for (var dish in category.dishes) {
+        if (dish.addedCount > 0) {
+          selectedDishes.add(dish);
+        }
+      }
+    }
+    return selectedDishes;
   }
-
-  int get taskCount {
-    return _tasks.length;
-  }
-
-  void addTask(String newTaskTitle) {
-    final task = Task(name: newTaskTitle);
-    _tasks.add(task);
-    notifyListeners();
-  }
-
-  void updateTask(Task task) {
-    task.toggleDone();
-    notifyListeners();
-  }
-
-  void deleteTask(Task task) {
-    _tasks.remove(task);
-    notifyListeners();
-  }
-  */
 }
