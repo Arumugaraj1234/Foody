@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:foody/models/dish_data.dart';
-import 'package:foody/models/dish_details_model.dart';
-import 'package:foody/models/selected_dish_data.dart';
 import 'package:foody/widgets/ordered_dish_widget.dart';
 import 'package:foody/widgets/rounded_button.dart';
 import 'package:provider/provider.dart';
