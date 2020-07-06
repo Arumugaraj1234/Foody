@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:foody/models/dish_data.dart';
 import 'package:foody/models/dish_details_model.dart';
 import 'package:foody/models/network_response.dart';
@@ -14,32 +16,21 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  TabController _controller;
-
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void getDishsesDetails() async {
     NetworkResponse response = await ApiService.shared.getAppInitDetails();
     if (response.responseCode == 1) {
       List<CategoryModel> categories = response.responseData;
-      print('Raj: $categories');
       Provider.of<DishData>(context, listen: false).setCategories(categories);
 
       setState(() {
-        allTabs = setTabs(
-            Provider.of<DishData>(context, listen: false).getCategories);
-        //allTabsView =setTabBarView(Provider.of<DishData>(context).getCategories);
-        tabsCount =
-            Provider.of<DishData>(context, listen: false).getCategories.length;
-        _controller = TabController(length: tabsCount, vsync: this);
+        _controller = TabController(length: categories.length, vsync: this);
+        tabsCount = categories.length;
+        allTabs = setTabs(categories);
+
+        isLoadOver = true;
       });
-//      setState(() {
-//        allTabs = setTabs(categories);
-//        allTabsView = setTabBarView(categories);
-//        tabsCount = categories.length;
-//      });
     }
-    //print('Response: ${response.responseData.toString()}');
   }
 
   List<Widget> setTabs(List<CategoryModel> cat) {
@@ -68,11 +59,8 @@ class _HomeScreenState extends State<HomeScreen>
                   size: 30.0,
                 ),
                 onPressed: () {
-                  print(Provider.of<DishData>(context, listen: false)
-                      .selectedDishes);
-                  List<DishDetailsModel> selectedDishes =
-                      Provider.of<DishData>(context, listen: false)
-                          .selectedDishes;
+                  Provider.of<DishData>(context, listen: false)
+                      .setSelectedDishes();
                   int selectedItemCount =
                       Provider.of<DishData>(context, listen: false)
                           .selectedItemsCount;
@@ -80,10 +68,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return OrderSummaryScreen(
-                          selectedDishes: selectedDishes,
-                          selectedItemsCount: selectedItemCount,
-                        );
+                        return OrderSummaryScreen();
                       }),
                     );
                   }
@@ -151,36 +136,157 @@ class _HomeScreenState extends State<HomeScreen>
         children: resultWidget,
       );
     });
+
     return result;
   }
 
   List<Widget> allTabs = [];
   List<Widget> allTabsView = [];
   int tabsCount = 0;
+  TabController _controller;
+  String userName = '';
+  bool isLoadOver = false;
+
+  void getUserDetails() async {
+    List<String> userDetails = await ApiService.shared.getUserDetails();
+    setState(() {
+      userName = userDetails[0];
+    });
+  }
+
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => new AlertDialog(
+            title: new Text('Are you sure?'),
+            content: new Text('Do you want to exit an App'),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: new Text('No'),
+              ),
+              new FlatButton(
+                //onPressed: () => Navigator.of(context).pop(true),
+                //onPressed: () => SystemNavigator.pop(),
+                onPressed: () {
+                  SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                },
+                child: new Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
 
   @override
   void initState() {
     super.initState();
     getDishsesDetails();
+    getUserDetails();
   }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
         length: tabsCount,
         child: Scaffold(
+          key: _scaffoldKey,
           appBar: AppBar(
               backgroundColor: Colors.white,
-              leading: IconButton(icon: Icon(Icons.menu), onPressed: null),
+              leading: IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Colors.black54,
+                  ),
+                  onPressed: () {
+                    _scaffoldKey.currentState.openDrawer();
+                  }),
               actions: <Widget>[setCartButton()],
               bottom: TabBar(
+                controller: _controller,
                 tabs: allTabs,
                 indicatorColor: Colors.red,
                 labelColor: Colors.red,
                 isScrollable: true,
                 unselectedLabelColor: Colors.grey,
               )),
-          body: setTabBarView(),
+          body: WillPopScope(
+            child: isLoadOver
+                ? setTabBarView()
+                : Container(
+                    child: Center(
+                      child: SpinKitWave(
+                        color: Colors.red,
+                        size: 40.0,
+                      ),
+                    ),
+                  ), //setTabBarView(),
+            onWillPop: _onWillPop,
+          ),
+          drawer: new Drawer(
+              child: new ListView(
+            children: <Widget>[
+              Container(
+                height: 250.0,
+                child: new DrawerHeader(
+                  margin: EdgeInsets.all(0),
+                  padding: EdgeInsets.all(0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      gradient: new LinearGradient(
+                          colors: [Color(0xFF41a53f), Colors.green.shade300]),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(25.0),
+                        bottomRight: Radius.circular(25.0),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset('images/user.png'),
+                          Text(
+                            userName,
+                            style: TextStyle(
+                                color: Colors.black54, fontSize: 20.0),
+                          ),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          Text(
+                            'ID: 410',
+                            style: TextStyle(
+                                color: Colors.black54, fontSize: 18.0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 30.0,
+              ),
+              new ListTile(
+                leading: Image.asset('images/logout_icon.png'),
+                title: new Text(
+                  'Log Out',
+                  style: TextStyle(color: Colors.black54, fontSize: 20.0),
+                ),
+                onTap: () {
+                  ApiService.shared.setUserLoggedInStatus(false);
+                  List<String> userDetails = ['', '', ''];
+                  ApiService.shared.setUserDetails(userDetails: userDetails);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+              ),
+            ],
+          )),
         ));
   }
 }

@@ -32,6 +32,7 @@ class ApiService {
 
   void setUserDetails({List<String> userDetails}) async {
     final SharedPreferences prefs = await _prefs;
+    print(userDetails);
     //The order should be name, email, id
     prefs.setStringList(kUserDetailsKey, userDetails);
   }

@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'dart:collection';
 import 'package:foody/models/category_model.dart';
 import 'package:foody/models/dish_details_model.dart';
 
 class DishData extends ChangeNotifier {
   List<CategoryModel> _categories = [];
   int _totalSelectedItems = 0;
+  List<DishDetailsModel> _selectedDishes = [];
+  double _totalPriceOfSelectedItems = 0;
 
   int get categoryCount {
     return _categories.length;
@@ -39,14 +40,46 @@ class DishData extends ChangeNotifier {
   }
 
   List<DishDetailsModel> get selectedDishes {
-    List<DishDetailsModel> selectedDishes = [];
+    return _selectedDishes;
+  }
+
+  void setSelectedDishes() {
+    _selectedDishes = [];
+    _totalPriceOfSelectedItems = 0;
     for (var category in _categories) {
       for (var dish in category.dishes) {
         if (dish.addedCount > 0) {
-          selectedDishes.add(dish);
+          _totalPriceOfSelectedItems =
+              _totalPriceOfSelectedItems + dish.totalPrice();
+          _selectedDishes.add(dish);
         }
       }
     }
-    return selectedDishes;
+  }
+
+  void addItemInSelectedDishes(int index) {
+    _selectedDishes[index].addedCount++;
+    _totalSelectedItems++;
+    _totalPriceOfSelectedItems = 0;
+    for (var dish in _selectedDishes) {
+      _totalPriceOfSelectedItems =
+          _totalPriceOfSelectedItems + dish.totalPrice();
+    }
+    notifyListeners();
+  }
+
+  void removeItemInSelectedDishes(int index) {
+    _selectedDishes[index].addedCount--;
+    _totalSelectedItems--;
+    _totalPriceOfSelectedItems = 0;
+    for (var dish in _selectedDishes) {
+      _totalPriceOfSelectedItems =
+          _totalPriceOfSelectedItems + dish.totalPrice();
+    }
+    notifyListeners();
+  }
+
+  double get totalPrice {
+    return _totalPriceOfSelectedItems;
   }
 }

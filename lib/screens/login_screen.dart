@@ -32,7 +32,7 @@ class _LoginState extends State<Login> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return HomeScreenProvider();
+          return HomeScreen();
         }),
       );
     }
@@ -93,13 +93,13 @@ class _LoginState extends State<Login> {
                             ApiService.shared.setUserLoggedInStatus(true);
                             ApiService.shared
                                 .setUserDetails(userDetails: userDetails);
-                            //Navigator.pushNamed(context, HomeScreen.id);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return HomeScreenProvider();
-                              }),
-                            );
+                            Navigator.pushNamed(context, HomeScreen.id);
+//                            Navigator.push(
+//                              context,
+//                              MaterialPageRoute(builder: (context) {
+//                                return HomeScreen();
+//                              }),
+//                            );
                           }
                         },
                       ),
@@ -132,14 +132,21 @@ class _LoginState extends State<Login> {
   }
 }
 
-class HomeScreenProvider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) {
-        return DishData();
-      },
-      child: HomeScreen(),
-    );
-  }
-}
+//class HomeScreenProvider extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    return HomeScreen();
+//  }
+//}
+
+//class HomeScreenProvider extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    return ChangeNotifierProvider(
+//      create: (_) {
+//        return DishData();
+//      },
+//      child: HomeScreen(),
+//    );
+//  }
+//}

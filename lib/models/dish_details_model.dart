@@ -19,4 +19,8 @@ class DishDetailsModel {
       this.dishImageLink,
       this.isAddonAvailable,
       this.addedCount});
+
+  double totalPrice() {
+    return addedCount * dishPrice;
+  }
 }

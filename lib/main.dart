@@ -12,14 +12,19 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: Login.id,
-      routes: {
-        Login.id: (context) => Login(),
-        MobileInputScreen.id: (context) => MobileInputScreen(),
-        HomeScreen.id: (context) => HomeScreen()
+    return ChangeNotifierProvider<DishData>(
+      create: (_) {
+        return DishData();
       },
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: Login.id,
+        routes: {
+          Login.id: (context) => Login(),
+          MobileInputScreen.id: (context) => MobileInputScreen(),
+          HomeScreen.id: (context) => HomeScreen()
+        },
+      ),
     );
   }
 }
